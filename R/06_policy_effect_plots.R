@@ -128,11 +128,25 @@ ggsave("output/07_country_cases.png", p7, width = 11, height = 6.5, dpi = 150)
 cat("Saved output/07_country_cases.png\n")
 
 # ============================================================
-# Plot 8 — Treated vs never-treated mean trajectory
+# Plot 8 — Growth-since-2000 by policy adoption status
 # ------------------------------------------------------------
-# For each policy, split countries into "ever adopted by 2021" vs "never".
-# Plot mean lnrenewable by year for each group. Caveat-y but intuitive.
+# Compares trajectories of "ever adopted" vs "never adopted" countries
+# AFTER removing each country's 2000 baseline. So every country starts
+# at 0 and the lines show *cumulative growth* in log(renewable) — i.e.,
+# we're measuring how much renewable energy multiplied since 2000.
+#
+# This avoids the misleading "never-adopted is higher" pattern caused
+# by FIT non-adopters being legacy-hydro giants (USA, Norway, Iceland)
+# whose huge baselines dwarf FIT-driven new renewables.
 # ============================================================
+baseline <- panel %>%
+  filter(year == 2000) %>%
+  select(country, ln2000 = lnrenewable)
+
+panel_growth <- panel %>%
+  left_join(baseline, by = "country") %>%
+  mutate(ln_growth = lnrenewable - ln2000)
+
 build_treated <- function(policy_col, policy_label) {
   ever <- panel %>%
     group_by(country) %>%
@@ -140,10 +154,10 @@ build_treated <- function(policy_col, policy_label) {
               .groups = "drop") %>%
     mutate(group = ifelse(ever, "Ever adopted", "Never adopted"))
 
-  panel %>%
+  panel_growth %>%
     left_join(ever %>% select(country, group), by = "country") %>%
     group_by(year, group) %>%
-    summarise(mean_ln = mean(lnrenewable, na.rm = TRUE),
+    summarise(mean_growth = mean(ln_growth, na.rm = TRUE),
               n = n(), .groups = "drop") %>%
     mutate(policy = policy_label)
 }
@@ -154,16 +168,19 @@ treated_data <- bind_rows(
   build_treated("dummy_ETS", "ETS")
 )
 
-p8 <- ggplot(treated_data, aes(year, mean_ln, colour = group)) +
+p8 <- ggplot(treated_data, aes(year, mean_growth, colour = group)) +
+  geom_hline(yintercept = 0, linetype = "dotted", colour = "grey50") +
   geom_line(linewidth = 1) +
   geom_point(size = 1.5) +
   facet_wrap(~ policy) +
   scale_colour_manual(values = c("Ever adopted" = "#2c7fb8",
                                  "Never adopted" = "grey50")) +
   labs(
-    title = "Mean log(renewable) over time, by policy adoption status",
-    subtitle = "Country counts vary across panels (countries can be 'never' for one policy, 'ever' for another)",
-    x = NULL, y = "Mean log(renewable)", colour = NULL
+    title = "Cumulative renewable growth since 2000, by policy adoption status",
+    subtitle = "Each country normalized to its own 2000 level — removes legacy-hydro confound",
+    x = NULL,
+    y = "Mean Δ log(renewable) since 2000",
+    colour = NULL
   ) +
   theme(legend.position = "bottom")
 
