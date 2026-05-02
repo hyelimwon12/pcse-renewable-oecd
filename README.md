@@ -37,6 +37,23 @@ Prais-Winsten AR(1) transformation per panel before computing PCSE.
 > Magnitudes differ — R's coefficients are typically larger because the
 > Stata version absorbs much of the variation through the AR(1) layer.
 
+## Key visualizations
+
+**Policy adoption across countries and time**
+Each blue tile marks a year a policy was active. Most ETS adoption is the EU-wide 2005 launch; FIT is staggered; RPS is rare outside the US.
+
+![Policy adoption heatmap](output/02_policy_heatmap.png)
+
+**Country case studies**
+Six countries with distinctive policy histories. Dashed vertical lines mark the year each policy was first adopted.
+
+![Country case studies](output/05_country_cases.png)
+
+**Year-over-year renewable growth, with policy presence**
+Tile colour is YoY growth (red = decline, green = growth). Circles mark how many of FIT/RPS/ETS were active that year — bigger circle = more policies stacked.
+
+![Growth heatmap with policy presence](output/06_growth_heatmap.png)
+
 ## Project layout
 ```
 R/                  analysis scripts (run in numeric order)
