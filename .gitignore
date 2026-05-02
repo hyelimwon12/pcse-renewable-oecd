@@ -1,0 +1,20 @@
+# R session and history files
+.Rhistory
+.RData
+.Rproj.user/
+.Ruserdata
+
+# OS / editor noise
+.DS_Store
+*.swp
+.vscode/
+
+# Output we can regenerate from code (keep code, drop artifacts)
+output/*.png
+output/*.pdf
+output/*.csv
+
+# Keep folders in git even if empty
+!output/.gitkeep
+!data/raw/.gitkeep
+!data/processed/.gitkeep
