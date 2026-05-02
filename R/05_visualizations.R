@@ -7,7 +7,6 @@ suppressPackageStartupMessages({
   library(tidyr)
   library(ggplot2)
   library(scales)
-  library(forcats)
 })
 
 panel <- readRDS("data/processed/panel_lagged.rds")
@@ -89,56 +88,6 @@ ggsave("output/02_policy_heatmap.png", p2, width = 10, height = 7, dpi = 150)
 cat("Saved output/02_policy_heatmap.png\n")
 
 # ============================================================
-# Plot 3 — Coefficient plot (replaces Table E, 3-year lag model)
-# ------------------------------------------------------------
-# Dot-and-whisker: coefficient ± 1.96*SE, colour by significance.
-# A coefficient plot is almost always more readable than a table —
-# you see effect direction, magnitude, and uncertainty at once.
-# ============================================================
-ct <- models$L3$ct  # the coeftest object
-
-coefs <- tibble::tibble(
-    term = rownames(ct),
-    estimate = ct[, "Estimate"],
-    se       = ct[, "Std. Error"],
-    p        = ct[, "Pr(>|t|)"]
-  ) %>%
-  filter(term != "(Intercept)") %>%
-  mutate(
-    lower = estimate - 1.96 * se,
-    upper = estimate + 1.96 * se,
-    sig   = case_when(
-      p < 0.01  ~ "p < 0.01",
-      p < 0.05  ~ "p < 0.05",
-      p < 0.10  ~ "p < 0.10",
-      TRUE      ~ "n.s."
-    ),
-    sig = factor(sig, levels = c("p < 0.01", "p < 0.05", "p < 0.10", "n.s."))
-  )
-
-# Re-order so largest-magnitude effects sit at top of plot
-coefs <- coefs %>% mutate(term = fct_reorder(term, abs(estimate)))
-
-p3 <- ggplot(coefs, aes(estimate, term, colour = sig)) +
-  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
-  geom_errorbar(aes(xmin = lower, xmax = upper),
-                width = 0.2, orientation = "y") +
-  geom_point(size = 2.5) +
-  scale_colour_manual(values = c(
-    "p < 0.01" = "#2c7fb8", "p < 0.05" = "#41b6c4",
-    "p < 0.10" = "#7fcdbb", "n.s."     = "grey60"
-  )) +
-  labs(
-    title = "PCSE regression coefficients on log(renewable)",
-    subtitle = "Three-year lag model, R replication of thesis Table E",
-    x = "Coefficient (95% CI)", y = NULL, colour = NULL
-  ) +
-  theme(legend.position = "bottom")
-
-ggsave("output/03_coefficient_plot.png", p3, width = 8, height = 5, dpi = 150)
-cat("Saved output/03_coefficient_plot.png\n")
-
-# ============================================================
 # Plot 4 — Distribution of key variables (replaces Table C)
 # ------------------------------------------------------------
 # Densities of the four most interesting variables. Helps you eyeball
@@ -165,75 +114,5 @@ p4 <- ggplot(desc, aes(value)) +
 
 ggsave("output/04_distributions.png", p4, width = 8, height = 5, dpi = 150)
 cat("Saved output/04_distributions.png\n")
-
-# ============================================================
-# Plot 5 — Faceted coefficient plot across all three lag models
-# ------------------------------------------------------------
-# Direct visual replacement for thesis Table E: every column of the
-# table becomes a panel in one figure. Easier to spot which effects
-# are robust across lag specifications and which only show up in one.
-# ============================================================
-extract_coefs <- function(model_obj, lag_label) {
-  ct <- model_obj$ct
-  tibble::tibble(
-    term     = rownames(ct),
-    estimate = ct[, "Estimate"],
-    se       = ct[, "Std. Error"],
-    p        = ct[, "Pr(>|t|)"]
-  ) %>%
-    filter(term != "(Intercept)") %>%
-    mutate(
-      lag = lag_label,
-      # Strip trailing "_L1" / "_L2" / "_L3" so the same variable lines up
-      # across panels on the y-axis.
-      term_clean = sub("_L[123]$", "", term)
-    )
-}
-
-all_coefs <- bind_rows(
-  extract_coefs(models$L1, "1-year lag"),
-  extract_coefs(models$L2, "2-year lag"),
-  extract_coefs(models$L3, "3-year lag")
-) %>%
-  mutate(
-    lower = estimate - 1.96 * se,
-    upper = estimate + 1.96 * se,
-    sig   = case_when(
-      p < 0.01 ~ "p < 0.01",
-      p < 0.05 ~ "p < 0.05",
-      p < 0.10 ~ "p < 0.10",
-      TRUE     ~ "n.s."
-    ),
-    sig = factor(sig, levels = c("p < 0.01", "p < 0.05", "p < 0.10", "n.s."))
-  )
-
-# Order variables: policy variables on top, controls below, by L3 magnitude
-order_terms <- all_coefs %>%
-  filter(lag == "3-year lag") %>%
-  arrange(abs(estimate)) %>%
-  pull(term_clean)
-
-all_coefs <- all_coefs %>%
-  mutate(term_clean = factor(term_clean, levels = order_terms))
-
-p5 <- ggplot(all_coefs, aes(estimate, term_clean, colour = sig)) +
-  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
-  geom_errorbar(aes(xmin = lower, xmax = upper),
-                width = 0.2, orientation = "y") +
-  geom_point(size = 2) +
-  facet_wrap(~ lag) +
-  scale_colour_manual(values = c(
-    "p < 0.01" = "#2c7fb8", "p < 0.05" = "#41b6c4",
-    "p < 0.10" = "#7fcdbb", "n.s."     = "grey60"
-  )) +
-  labs(
-    title = "PCSE regression coefficients across lag specifications",
-    subtitle = "Visual replacement for thesis Table E — three lag models side by side",
-    x = "Coefficient (95% CI)", y = NULL, colour = NULL
-  ) +
-  theme(legend.position = "bottom")
-
-ggsave("output/05_table_e_faceted.png", p5, width = 11, height = 5, dpi = 150)
-cat("Saved output/05_table_e_faceted.png\n")
 
 cat("\nAll plots written to output/\n")

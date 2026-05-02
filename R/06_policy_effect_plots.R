@@ -2,10 +2,9 @@
 # Visualizations focused on the relationship between policies (FIT/RPS/ETS)
 # and renewable energy growth.
 #
-# Four plots:
+# Three plots:
 #   06 - Event study: RE around year of first policy adoption
 #   07 - Country case studies: 6 illustrative trajectories with policy timeline
-#   08 - Treated vs never-treated: mean RE trajectory by group, by policy
 #   09 - Growth-rate heatmap with policy-state overlay
 
 suppressPackageStartupMessages({
@@ -126,103 +125,6 @@ p7 <- ggplot(case_data %>%
 
 ggsave("output/07_country_cases.png", p7, width = 11, height = 6.5, dpi = 150)
 cat("Saved output/07_country_cases.png\n")
-
-# ============================================================
-# Plot 8 — Growth-since-2000 by policy adoption status
-# ------------------------------------------------------------
-# Compares trajectories of "ever adopted" vs "never adopted" countries
-# AFTER removing each country's 2000 baseline. So every country starts
-# at 0 and the lines show *cumulative growth* in log(renewable) — i.e.,
-# we're measuring how much renewable energy multiplied since 2000.
-#
-# This avoids the misleading "never-adopted is higher" pattern caused
-# by FIT non-adopters being legacy-hydro giants (USA, Norway, Iceland)
-# whose huge baselines dwarf FIT-driven new renewables.
-# ============================================================
-baseline <- panel %>%
-  filter(year == 2000) %>%
-  select(country, ln2000 = lnrenewable)
-
-panel_growth <- panel %>%
-  left_join(baseline, by = "country") %>%
-  mutate(ln_growth = lnrenewable - ln2000)
-
-# Helper for FIT / RPS — binary split (ever vs never adopted).
-build_binary <- function(policy_col, policy_label) {
-  ever <- panel %>%
-    group_by(country) %>%
-    summarise(ever = any(.data[[policy_col]] == 1, na.rm = TRUE),
-              .groups = "drop") %>%
-    mutate(group = ifelse(ever, "Ever adopted", "Never adopted"))
-
-  panel_growth %>%
-    left_join(ever %>% select(country, group), by = "country") %>%
-    group_by(year, group) %>%
-    summarise(mean_growth = mean(ln_growth, na.rm = TRUE),
-              n = n(), .groups = "drop") %>%
-    mutate(policy = policy_label)
-}
-
-# Helper for ETS — three coverage tiers based on each country's MAX
-# observed ETS_cover. Cutoff at 30% comes from a natural gap in the
-# data (France 29% vs Latvia 34%). Sidesteps the dummy/coverage
-# distinction the thesis already flagged: dummy is insignificant
-# but coverage is significant.
-build_ets_tiers <- function() {
-  tiers <- panel %>%
-    group_by(country) %>%
-    summarise(max_cover = max(ETS_cover, na.rm = TRUE), .groups = "drop") %>%
-    mutate(group = case_when(
-      max_cover == 0   ~ "No ETS",
-      max_cover <= 30  ~ "Low coverage (≤30%)",
-      TRUE             ~ "High coverage (>30%)"
-    ))
-
-  panel_growth %>%
-    left_join(tiers %>% select(country, group), by = "country") %>%
-    group_by(year, group) %>%
-    summarise(mean_growth = mean(ln_growth, na.rm = TRUE),
-              n = n(), .groups = "drop") %>%
-    mutate(policy = "ETS")
-}
-
-# Bind FIT/RPS (binary) with ETS (3-tier). The shared `group` column
-# can hold any of the 5 distinct labels; a single colour scale covers
-# all of them.
-treated_data <- bind_rows(
-  build_binary("dummy_FIT", "FIT"),
-  build_binary("dummy_RPS", "RPS"),
-  build_ets_tiers()
-) %>%
-  mutate(group = factor(group, levels = c(
-    "Never adopted", "Ever adopted",
-    "No ETS", "Low coverage (≤30%)", "High coverage (>30%)"
-  )))
-
-p8 <- ggplot(treated_data, aes(year, mean_growth, colour = group)) +
-  geom_hline(yintercept = 0, linetype = "dotted", colour = "grey50") +
-  geom_line(linewidth = 1) +
-  geom_point(size = 1.5) +
-  facet_wrap(~ policy) +
-  scale_colour_manual(values = c(
-    "Never adopted"          = "grey55",
-    "Ever adopted"           = "#2c7fb8",
-    "No ETS"                 = "grey55",
-    "Low coverage (≤30%)"    = "#a6cee3",
-    "High coverage (>30%)"   = "#1f4e79"
-  )) +
-  labs(
-    title = "Cumulative renewable growth since 2000, by policy intensity",
-    subtitle = "Each country normalized to its 2000 level. ETS panel uses coverage tiers, not just dummy.",
-    x = NULL,
-    y = "Mean Δ log(renewable) since 2000",
-    colour = NULL
-  ) +
-  theme(legend.position = "bottom") +
-  guides(colour = guide_legend(nrow = 2, byrow = TRUE))
-
-ggsave("output/08_treated_vs_untreated.png", p8, width = 11, height = 4.5, dpi = 150)
-cat("Saved output/08_treated_vs_untreated.png\n")
 
 # ============================================================
 # Plot 9 — Growth-rate heatmap with policy-count overlay
