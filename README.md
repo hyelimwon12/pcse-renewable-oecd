@@ -55,3 +55,14 @@ source("R/04_compare_thesis.R")   # side-by-side vs thesis values
 source("R/05_visualizations.R")   # descriptive plots + Table E coefficients
 source("R/06_policy_effect_plots.R")  # event study, case studies, treated vs untreated, growth heatmap
 ```
+
+## Environment
+
+`sessionInfo.txt` records the R version and exact package versions used.
+If a package's behaviour changes in a future release and these scripts
+break, you have a known-good reference point to roll back to.
+
+Regenerate after upgrading packages:
+```bash
+Rscript -e "source('R/00_setup.R'); sink('sessionInfo.txt'); print(sessionInfo()); sink()"
+```
