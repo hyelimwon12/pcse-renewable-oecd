@@ -52,4 +52,5 @@ source("R/01_load_data.R")        # Excel -> data/processed/panel.rds
 source("R/02_build_variables.R")  # filter sample, build lags
 source("R/03_pcse_regression.R")  # run Table E (3 lag models)
 source("R/04_compare_thesis.R")   # side-by-side vs thesis values
+source("R/05_visualizations.R")   # output/*.png (regenerated, not tracked)
 ```

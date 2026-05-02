@@ -10,7 +10,10 @@ required_pkgs <- c(
   "lmtest",    # coeftest() for hypothesis tests
   "sandwich",  # robust / clustered standard errors
   "prais",     # Prais-Winsten regression
-  "pcse"       # panel-corrected standard errors
+  "pcse",      # panel-corrected standard errors
+  "ggplot2",   # plots
+  "scales",    # axis label formatters for ggplot
+  "forcats"    # factor reordering for plots
 )
 
 missing <- required_pkgs[!vapply(required_pkgs, requireNamespace,
