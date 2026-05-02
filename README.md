@@ -44,10 +44,10 @@ Each blue tile marks a year a policy was active. Most ETS adoption is the EU-wid
 
 ![Policy adoption heatmap](output/02_policy_heatmap.png)
 
-**Country case studies**
-Six countries with distinctive policy histories. Dashed vertical lines mark the year each policy was first adopted.
+**Event study: renewable energy around first policy adoption**
+For every country that adopted FIT, RPS, or ETS, year 0 = first year of adoption. Each panel shows the average change in log(renewable) before and after, with a 95% CI band. All three policies show clear post-adoption growth.
 
-![Country case studies](output/05_country_cases.png)
+![Event study](output/04_event_study.png)
 
 **Year-over-year renewable growth, with policy presence**
 Tile colour is YoY growth (red = decline, green = growth). Circles mark how many of FIT/RPS/ETS were active that year — bigger circle = more policies stacked.
