@@ -3,9 +3,9 @@
 # and renewable energy growth.
 #
 # Three plots:
-#   06 - Event study: RE around year of first policy adoption
-#   07 - Country case studies: 6 illustrative trajectories with policy timeline
-#   09 - Growth-rate heatmap with policy-state overlay
+#   04 - Event study: RE around year of first policy adoption
+#   05 - Country case studies: 6 illustrative trajectories with policy timeline
+#   06 - Growth-rate heatmap with policy-state overlay
 
 suppressPackageStartupMessages({
   library(dplyr)
@@ -25,7 +25,7 @@ panel <- readRDS("data/processed/panel_lagged.rds") %>%
 theme_set(theme_minimal(base_size = 11))
 
 # ============================================================
-# Plot 6 — Event study around first policy adoption
+# Plot 4 — Event study around first policy adoption
 # ------------------------------------------------------------
 # For each country that ever adopted policy P, define
 #   t = 0  := first year with dummy_P == 1
@@ -81,11 +81,11 @@ p6 <- ggplot(event_data, aes(event_time, mean_ln)) +
     x = "Years since policy adoption", y = "Δ log(renewable)"
   )
 
-ggsave("output/06_event_study.png", p6, width = 11, height = 4.5, dpi = 150)
-cat("Saved output/06_event_study.png\n")
+ggsave("output/04_event_study.png", p6, width = 11, height = 4.5, dpi = 150)
+cat("Saved output/04_event_study.png\n")
 
 # ============================================================
-# Plot 7 — Country case studies
+# Plot 5 — Country case studies
 # ------------------------------------------------------------
 # Six countries with distinct policy stories. Each panel: line = renewable
 # generation over time, vertical ribbons mark when each policy was active.
@@ -123,11 +123,11 @@ p7 <- ggplot(case_data %>%
   ) +
   theme(legend.position = "bottom")
 
-ggsave("output/07_country_cases.png", p7, width = 11, height = 6.5, dpi = 150)
-cat("Saved output/07_country_cases.png\n")
+ggsave("output/05_country_cases.png", p7, width = 11, height = 6.5, dpi = 150)
+cat("Saved output/05_country_cases.png\n")
 
 # ============================================================
-# Plot 9 — Growth-rate heatmap with policy-count overlay
+# Plot 6 — Growth-rate heatmap with policy-count overlay
 # ------------------------------------------------------------
 # Tile fill = year-over-year growth rate of renewable.
 # Overlay (size of dot) = number of policies (0..3) active that year.
@@ -172,7 +172,7 @@ p9 <- growth %>%
   theme(panel.grid = element_blank(),
         legend.position = "bottom")
 
-ggsave("output/09_growth_heatmap.png", p9, width = 11, height = 7, dpi = 150)
-cat("Saved output/09_growth_heatmap.png\n")
+ggsave("output/06_growth_heatmap.png", p9, width = 11, height = 7, dpi = 150)
+cat("Saved output/06_growth_heatmap.png\n")
 
 cat("\nAll policy-effect plots written to output/\n")

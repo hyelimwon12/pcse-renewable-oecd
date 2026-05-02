@@ -112,7 +112,7 @@ p4 <- ggplot(desc, aes(value)) +
     x = NULL, y = "Density"
   )
 
-ggsave("output/04_distributions.png", p4, width = 8, height = 5, dpi = 150)
-cat("Saved output/04_distributions.png\n")
+ggsave("output/03_distributions.png", p4, width = 8, height = 5, dpi = 150)
+cat("Saved output/03_distributions.png\n")
 
 cat("\nAll plots written to output/\n")

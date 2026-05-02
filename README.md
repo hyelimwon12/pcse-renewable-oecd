@@ -42,7 +42,7 @@ Prais-Winsten AR(1) transformation per panel before computing PCSE.
 R/                  analysis scripts (run in numeric order)
 data/raw/           original Excel — never edit
 data/processed/     cleaned/transformed data written by scripts
-output/             tables, figures (not tracked in git)
+output/             figures (PNGs tracked; PDFs/CSVs gitignored)
 ```
 
 ## How to reproduce

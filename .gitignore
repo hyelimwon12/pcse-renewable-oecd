@@ -9,8 +9,8 @@
 *.swp
 .vscode/
 
-# Output we can regenerate from code (keep code, drop artifacts)
-output/*.png
+# Output: PNGs are tracked (small enough; useful to view in repo).
+# PDFs/CSVs still ignored — regenerate from code.
 output/*.pdf
 output/*.csv
 
