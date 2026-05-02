@@ -253,15 +253,19 @@ p9 <- growth %>%
   ggplot(aes(year, country)) +
   geom_tile(aes(fill = pmin(pmax(growth, -25), 50)),
             colour = "white", linewidth = 0.1) +
-  geom_point(aes(size = n_pol), shape = 21, fill = NA, colour = "black",
-             stroke = 0.4) +
+  geom_point(aes(size = factor(n_pol)), shape = 21, fill = NA,
+             colour = "black", stroke = 0.6) +
   scale_fill_gradient2(
     low = "#d7191c", mid = "white", high = "#1a9641",
     midpoint = 0, name = "YoY growth (%)",
     limits = c(-25, 50), oob = scales::squish
   ) +
-  scale_size_continuous(range = c(0, 2.5), breaks = 0:3,
-                        name = "# policies active") +
+  # Discrete size per policy-count so the differences are visually obvious
+  # (continuous range was too compressed). 0 -> invisible, then a steep ramp.
+  scale_size_manual(
+    values = c("0" = 0, "1" = 1.8, "2" = 4, "3" = 6.5),
+    name   = "# policies active"
+  ) +
   labs(
     title = "Year-over-year renewable growth by country, with policy presence",
     subtitle = "Cell colour = growth rate; circle size = number of (FIT, RPS, ETS) active",
